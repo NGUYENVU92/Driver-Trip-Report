@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Hành Trình Tài Xế</title>
+    <link rel="stylesheet" href="style.css">
+	
+	<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+	<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+	
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>BÁO CÁO HÀNH TRÌNH TÀI XẾ</h1>
+            <p class="subtitle">Driver Daily Trip Report Form</p>
+        </header>
+
+        <form id="tripReportForm" class="trip-form">
+            <!-- THỜI GIAN Section -->
+            <section class="form-section">
+                <h2 class="section-title">THỜI GIAN</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="trip_date" class="form-label required">Ngày đi</label>
+                        <input type="date" id="trip_date" name="trip_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_time" class="form-label required">Thời gian đi từ bãi xe</label>
+                        <input type="time" id="departure_time" name="departure_time" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="return_time" class="form-label required">Thời gian về bãi xe</label>
+                        <input type="time" id="return_time" name="return_time" class="form-control" required>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TĂNG CA Section -->
+            <section class="form-section">
+                <h2 class="section-title">TĂNG CA</h2>
+                <div class="form-group">
+                    <label for="overtime" class="form-label">Tăng ca</label>
+                    <input type="text" id="overtime" name="overtime" class="form-control" placeholder="Nhập số giờ tăng ca hoặc chi tiết">
+                </div>
+            </section>
+
+            <!-- HÀNH TRÌNH Section -->
+            <section class="form-section">
+                <h2 class="section-title">HÀNH TRÌNH</h2>
+                
+                <!-- Điểm đón đầu tiên -->
+                <div class="subsection">
+                    <h3 class="subsection-title">Điểm đón đầu tiên</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="first_pickup_name" class="form-label">Tên</label>
+                            <input type="text" id="first_pickup_name" name="first_pickup_name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="first_pickup_time" class="form-label">Giờ</label>
+                            <input type="time" id="first_pickup_time" name="first_pickup_time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="first_pickup_location" class="form-label">Địa điểm</label>
+                            <input type="text" id="first_pickup_location" name="first_pickup_location" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Điểm đón nhân viên khác -->
+                <div class="form-group">
+                    <label for="other_employee_pickups" class="form-label">Điểm đón nhân viên khác</label>
+                    <textarea id="other_employee_pickups" name="other_employee_pickups" class="form-control" rows="3" placeholder="Nhập thông tin các điểm đón khác..."></textarea>
+                </div>
+
+                <!-- Điểm làm việc đầu tiên -->
+                <div class="subsection">
+                    <h3 class="subsection-title">Điểm làm việc đầu tiên</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="first_work_name" class="form-label">Tên</label>
+                            <input type="text" id="first_work_name" name="first_work_name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="first_work_time" class="form-label">Giờ</label>
+                            <input type="time" id="first_work_time" name="first_work_time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="first_work_location" class="form-label">Địa điểm</label>
+                            <input type="text" id="first_work_location" name="first_work_location" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Điểm đón khác trong ngày -->
+                <div class="form-group">
+                    <label for="other_pickups_day" class="form-label">Điểm đón khác trong ngày</label>
+                    <textarea id="other_pickups_day" name="other_pickups_day" class="form-control" rows="3" placeholder="Nhập các điểm đón khác trong ngày..."></textarea>
+                </div>
+
+                <!-- Rời nhà máy cuối cùng -->
+                <div class="subsection">
+                    <h3 class="subsection-title">Rời nhà máy cuối cùng</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="last_departure_location" class="form-label">Địa điểm</label>
+                            <input type="text" id="last_departure_location" name="last_departure_location" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="last_departure_time" class="form-label">Giờ</label>
+                            <input type="time" id="last_departure_time" name="last_departure_time" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KẾT THÚC CHUYẾN Section -->
+            <section class="form-section">
+                <h2 class="section-title">KẾT THÚC CHUYẾN</h2>
+                <div class="subsection">
+                    <h3 class="subsection-title">Trả nhân viên cuối cùng</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="last_dropoff_name" class="form-label">Tên</label>
+                            <input type="text" id="last_dropoff_name" name="last_dropoff_name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="last_dropoff_time" class="form-label">Giờ</label>
+                            <input type="time" id="last_dropoff_time" name="last_dropoff_time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="last_dropoff_location" class="form-label">Địa điểm</label>
+                            <input type="text" id="last_dropoff_location" name="last_dropoff_location" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- THÔNG TIN KHÁC Section -->
+            <section class="form-section">
+                <h2 class="section-title">THÔNG TIN KHÁC</h2>
+                <div class="form-group">
+                    <label for="total_km" class="form-label required">Số KM đi được</label>
+                    <input type="number" id="total_km" name="total_km" class="form-control" min="0" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="passenger_names" class="form-label">Tên người đi xe</label>
+                    <textarea id="passenger_names" name="passenger_names" class="form-control" rows="4" placeholder="Nhập tên các hành khách..."></textarea>
+                </div>
+            </section>
+
+            <!-- XÁC NHẬN Section -->
+            <section class="form-section">
+                <h2 class="section-title">XÁC NHẬN</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="passenger_signature" class="form-label">Chữ ký Xác nhận người đi xe</label>
+                        <input type="text" id="passenger_signature" name="passenger_signature" class="form-control" placeholder="Nhập tên để xác nhận">
+                    </div>
+                    <div class="form-group">
+                        <label for="driver_signature" class="form-label required">Chữ ký Xác nhận tài xế</label>
+                        <input type="text" id="driver_signature" name="driver_signature" class="form-control" placeholder="Nhập tên để xác nhận" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="notes" class="form-label">Ghi chú</label>
+                    <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="Nhập ghi chú bổ sung..."></textarea>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <div class="form-actions">
+                <button type="button" id="saveDraftBtn" class="btn btn-secondary">
+                    <span class="btn-icon">💾</span>
+                    Lưu Tạm
+                </button>
+                <button type="button" id="clearFormBtn" class="btn btn-outline">
+                    <span class="btn-icon">🗑️</span>
+                    Xóa Form
+                </button>
+                <button type="submit" id="exportBtn" class="btn btn-primary">
+                    <span class="btn-icon">📥</span>
+                    Xuất Báo Cáo
+                </button>
+            </div>
+        </form>
+
+        <!-- Notification Area -->
+        <div id="notification" class="notification hidden"></div>
+    </div>
+
+    <script src="app.js"></script>
+	
+	
+</body>
+</html>
