@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Daily Task Reporter</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #6b7280;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --border-color: #e5e7eb;
+            --bg-light: #f9fafb;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: var(--primary-color);
+            background: var(--bg-light);
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        label .required {
+            color: var(--error-color);
+            margin-left: 4px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        input.error,
+        textarea.error,
+        select.error {
+            border-color: var(--error-color);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .dynamic-section {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: var(--bg-light);
+        }
+
+        .dynamic-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            width: 50px;
+            height: 26px;
+            position: relative;
+            appearance: none;
+            background: var(--secondary-color);
+            border-radius: 26px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked {
+            background: var(--primary-color);
+        }
+
+        .toggle-switch input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked::before {
+            left: 27px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: var(--text-dark);
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: var(--bg-light);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            max-width: 400px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+
+            header h1 {
+                font-size: 22px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 4px;
+            }
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+
+        .total-display {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: right;
+            margin-top: 12px;
+        }
+
+        .note {
+            font-size: 12px;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            animation: modalSlideIn 0.3s;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h3 {
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .date-range-picker {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Driver Daily Task Reporter</h1>
+            <div class="header-info" id="currentDateTime"></div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('new-report')">📝 New Report</button>
+            <button class="tab" onclick="switchTab('history')">📋 Report History</button>
+            <button class="tab" onclick="switchTab('export')">📊 Export Data</button>
+        </div>
+
+        <!-- NEW REPORT TAB -->
+        <div id="new-report" class="tab-content active">
+            <div id="messageContainer"></div>
+            
+            <div class="card">
+                <div class="toggle-switch">
+                    <label>Single Day</label>
+                    <input type="checkbox" id="multiDayToggle" onchange="toggleMultiDay()">
+                    <label>Multiple Days</label>
+                </div>
+
+                <div id="singleDaySection">
+                    <div class="form-group">
+                        <label>Date of Trip (Ngày đi) <span class="required">*</span></label>
+                        <input type="date" id="tripDate" required>
+                    </div>
+                </div>
+
+                <div id="multiDaySection" style="display: none;">
+                    <div class="date-range-picker">
+                        <div class="form-group">
+                            <label>From Date <span class="required">*</span></label>
+                            <input type="date" id="fromDate">
+                        </div>
+                        <div class="form-group">
+                            <label>To Date <span class="required">*</span></label>
+                            <input type="date" id="toDate">
+                        </div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="copyToAllDays">
+                        <label for="copyToAllDays">Copy journey details to all days</label>
+                    </div>
+                </div>
+            </div>
+
+            <form id="reportForm">
+                <!-- TIME INFORMATION SECTION -->
+                <div class="card">
+                    <h2>⏰ Time Information (Thông tin thời gian)</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Departure Time from Parking (Thời gian đi từ bãi xe) <span class="required">*</span></label>
+                            <input type="time" id="departureTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Return Time to Parking (Thời gian về bãi xe) <span class="required">*</span></label>
+                            <input type="time" id="returnTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Overtime Hours (Số giờ Tăng ca)</label>
+                            <input type="number" id="overtimeHours" step="0.5" min="0" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JOURNEY DETAILS SECTION -->
+                <div class="card">
+                    <h2>🚏 Journey Details (Hành Trình)</h2>
+                    
+                    <!-- First Pickup -->
+                    <div class="dynamic-section">
+                        <h3 style="margin-bottom: 16px; font-size: 16px;">First Pickup Point (Điểm đón đầu tiên) <span class="required">*</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Person Name (Tên người đi) <span class="required">*</span></label>
+                                <input type="text" id="firstPickupPerson" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Time (Giờ) <span class="required">*</span></label>
+                                <input type="time" id="firstPickupTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Location (Địa điểm) <span class="required">*</span></label>
+                                <input type="text" id="firstPickupLocation" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Pickups -->
+                    <div class="dynamic-section">
+                        <h3 style="margin-bottom: 16px; font-size: 16px;">Additional Employee Pickups (Điểm đón nhân viên khác)</h3>
+                        <div id="additionalPickupsContainer"></div>
+                        <button type="button" class="btn btn-outline btn-small" onclick="addAdditionalPickup()">+ Add Pickup Point</button>
+                    </div>
+
+                    <!-- First Work Location -->
+                    <div class="dynamic-section">
+                        <h3 style="margin-bottom: 16px; font-size: 16px;">First Work Location (Điểm làm việc đầu tiên) <span class="required">*</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Location (Địa điểm) <span class="required">*</span></label>
+                                <input type="text" id="firstWorkLocation" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Time (Giờ) <span class="required">*</span></label>
+                                <input type="time" id="firstWorkTime" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Daily Pickups -->
+                    <div class="dynamic-section">
+                        <h3 style="margin-bottom: 16px; font-size: 16px;">Other Pickups During Day (Điểm đón khác trong ngày)</h3>
+                        <div id="otherPickupsContainer"></div>
+                        <button type="button" class="btn btn-outline btn-small" onclick="addOtherPickup()">+ Add Other Pickup</button>
+                    </div>
+
+                    <!-- Last Factory Departure -->
+                    <div class="dynamic-section">
+                        <h3 style="margin-bottom: 16px; font-size: 16px;">Last Factory Departure (Rời nhà máy cuối cùng) <span class="required">*</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Location (Địa điểm) <span class="required">*</span></label>
+                                <input type="text" id="lastFactoryLocation" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Time (Giờ) <span class="required">*</span></label>
+                                <input type="time" id="lastFactoryTime" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- END OF DAY DETAILS SECTION -->
+                <div class="card">
+                    <h2>🏁 End of Day Details</h2>
+                    
+                    <div class="dynamic-section">
+                        <h3 style="margin-bottom: 16px; font-size: 16px;">Last Employee Drop-off (Trả nhân viên cuối cùng)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Person Name (Tên người đi)</label>
+                                <input type="text" id="lastDropoffPerson">
+                            </div>
+                            <div class="form-group">
+                                <label>Time (Giờ)</label>
+                                <input type="time" id="lastDropoffTime">
+                            </div>
+                            <div class="form-group">
+                                <label>Location (Địa điểm)</label>
+                                <input type="text" id="lastDropoffLocation">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Total Kilometers (Số KM đi được trong ngày)</label>
+                            <input type="number" id="totalKilometers" min="0" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Passenger Names (Tên người đi xe)</label>
+                        <textarea id="passengerNames" placeholder="Enter all passenger names, separated by commas"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Passenger Signature Confirmation (Chữ ký Xác nhận người đi xe)</label>
+                            <input type="text" id="passengerSignature" placeholder="Digital signature or name">
+                            <div class="note">(Digital signature or name)</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Driver Signature Confirmation (Chữ ký Xác nhận Tài xế)</label>
+                            <input type="text" id="driverSignature" placeholder="Digital signature or name">
+                            <div class="note">(Digital signature or name)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOLL TICKETS SECTION -->
+                <div class="card">
+                    <h2>🎫 Toll/Bridge Tickets (Vé trạm cầu đường)</h2>
+                    <div id="tollTicketsContainer"></div>
+                    <button type="button" class="btn btn-outline btn-small" onclick="addTollTicket()">+ Add Ticket</button>
+                    <div id="totalTollAmount" class="total-display" style="display: none;">
+                        Total: <span id="tollTotal">0</span> VND
+                    </div>
+                </div>
+
+                <!-- FORM CONTROLS -->
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">✅ Submit Report</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">🗑️ Clear Form</button>
+                    <button type="button" class="btn btn-outline" onclick="duplicateLastEntry()">📋 Duplicate Last Entry</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- REPORT HISTORY TAB -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <h2>📋 Report History</h2>
+                
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h3>Total Reports</h3>
+                        <div class="value" id="totalReports">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Kilometers</h3>
+                        <div class="value" id="totalKmStats">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Overtime Hours</h3>
+                        <div class="value" id="totalOvertimeStats">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Date Range</h3>
+                        <div class="value" style="font-size: 14px;" id="dateRangeStats">-</div>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <label>Search by Date</label>
+                    <input type="text" id="searchInput" placeholder="Search by date (e.g., 2025-10-28)" onkeyup="filterHistory()">
+                </div>
+
+                <div id="historyTableContainer"></div>
+            </div>
+        </div>
+
+        <!-- EXPORT DATA TAB -->
+        <div id="export" class="tab-content">
+            <div class="card">
+                <h2>📊 Export Data to Excel</h2>
+                
+                <div class="form-group">
+                    <button class="btn btn-success" onclick="exportAllReports()">📥 Download All Reports</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Download Selected Report</label>
+                    <select id="selectReport" class="form-control">
+                        <option value="">-- Select a report --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="exportSelectedReport()">📥 Download Selected Report</button>
+                </div>
+
+                <div class="note" style="margin-top: 24px;">
+                    <strong>Note:</strong> Excel files will be downloaded in .xlsx format with all report data including journey details, toll tickets, and signatures.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" id="modalConfirm">Confirm</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state management (in-memory only)
+        window.driverReports = [];
+        let editingIndex = -1;
+        let additionalPickupCount = 0;
+        let otherPickupCount = 0;
+        let tollTicketCount = 0;
+
+        // Initialize app
+        function init() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            setDefaultDate();
+            renderHistory();
+            updateStats();
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tripDate').value = today;
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'history') {
+                renderHistory();
+                updateStats();
+            } else if (tabName === 'export') {
+                populateExportDropdown();
+            }
+        }
+
+        // Multi-day toggle
+        function toggleMultiDay() {
+            const isMultiDay = document.getElementById('multiDayToggle').checked;
+            document.getElementById('singleDaySection').style.display = isMultiDay ? 'none' : 'block';
+            document.getElementById('multiDaySection').style.display = isMultiDay ? 'block' : 'none';
+        }
+
+        // Dynamic sections
+        function addAdditionalPickup() {
+            additionalPickupCount++;
+            const container = document.getElementById('additionalPickupsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.id = `additionalPickup${additionalPickupCount}`;
+            div.innerHTML = `
+                <button type="button" class="btn btn-danger btn-small remove-btn" onclick="removeElement('additionalPickup${additionalPickupCount}')">
+                    ✕ Remove
+                </button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Person Name (Tên người đi)</label>
+                        <input type="text" class="additional-pickup-person" placeholder="Person name">
+                    </div>
+                    <div class="form-group">
+                        <label>Time (Giờ)</label>
+                        <input type="time" class="additional-pickup-time">
+                    </div>
+                    <div class="form-group">
+                        <label>Location (Địa điểm)</label>
+                        <input type="text" class="additional-pickup-location" placeholder="Location">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addOtherPickup() {
+            otherPickupCount++;
+            const container = document.getElementById('otherPickupsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.id = `otherPickup${otherPickupCount}`;
+            div.innerHTML = `
+                <button type="button" class="btn btn-danger btn-small remove-btn" onclick="removeElement('otherPickup${otherPickupCount}')">
+                    ✕ Remove
+                </button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Location (Địa điểm)</label>
+                        <input type="text" class="other-pickup-location" placeholder="Location">
+                    </div>
+                    <div class="form-group">
+                        <label>Time (Giờ)</label>
+                        <input type="time" class="other-pickup-time">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addTollTicket() {
+            tollTicketCount++;
+            const container = document.getElementById('tollTicketsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.id = `tollTicket${tollTicketCount}`;
+            div.innerHTML = `
+                <button type="button" class="btn btn-danger btn-small remove-btn" onclick="removeElement('tollTicket${tollTicketCount}'); updateTollTotal();">
+                    ✕ Remove
+                </button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ticket Number (Số vé)</label>
+                        <input type="text" class="toll-ticket-number" placeholder="T001234">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (Số tiền VND)</label>
+                        <input type="number" class="toll-ticket-amount" placeholder="15000" min="0" onchange="updateTollTotal()">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            document.getElementById('totalTollAmount').style.display = 'block';
+            updateTollTotal();
+        }
+
+        function removeElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        function updateTollTotal() {
+            const amounts = document.querySelectorAll('.toll-ticket-amount');
+            let total = 0;
+            amounts.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            document.getElementById('tollTotal').textContent = total.toLocaleString();
+            if (amounts.length === 0) {
+                document.getElementById('totalTollAmount').style.display = 'none';
+            }
+        }
+
+        // Form submission
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const isMultiDay = document.getElementById('multiDayToggle').checked;
+            
+            if (isMultiDay) {
+                submitMultiDayReports();
+            } else {
+                submitSingleReport();
+            }
+        });
+
+        function validateForm() {
+            const requiredFields = [
+                'departureTime', 'returnTime',
+                'firstPickupPerson', 'firstPickupTime', 'firstPickupLocation',
+                'firstWorkLocation', 'firstWorkTime',
+                'lastFactoryLocation', 'lastFactoryTime'
+            ];
+
+            const isMultiDay = document.getElementById('multiDayToggle').checked;
+            if (isMultiDay) {
+                requiredFields.push('fromDate', 'toDate');
+            } else {
+                requiredFields.push('tripDate');
+            }
+
+            let isValid = true;
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && !field.value.trim()) {
+                    field.classList.add('error');
+                    isValid = false;
+                } else if (field) {
+                    field.classList.remove('error');
+                }
+            });
+
+            return isValid;
+        }
+
+        function submitSingleReport() {
+            const report = collectFormData(document.getElementById('tripDate').value);
+            
+            if (editingIndex >= 0) {
+                window.driverReports[editingIndex] = report;
+                showMessage('Report updated successfully!', 'success');
+                editingIndex = -1;
+                document.getElementById('submitBtn').textContent = '✅ Submit Report';
+            } else {
+                window.driverReports.push(report);
+                showMessage('Report submitted successfully!', 'success');
+            }
+
+            clearForm();
+            updateStats();
+        }
+
+        function submitMultiDayReports() {
+            const fromDate = new Date(document.getElementById('fromDate').value);
+            const toDate = new Date(document.getElementById('toDate').value);
+            
+            if (fromDate > toDate) {
+                showMessage('From date must be before to date', 'error');
+                return;
+            }
+
+            let count = 0;
+            for (let d = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                const report = collectFormData(dateStr);
+                window.driverReports.push(report);
+                count++;
+            }
+
+            showMessage(`${count} reports submitted successfully!`, 'success');
+            clearForm();
+            updateStats();
+        }
+
+        function collectFormData(date) {
+            // Collect additional pickups
+            const additionalPickups = [];
+            document.querySelectorAll('#additionalPickupsContainer .dynamic-item').forEach(item => {
+                const person = item.querySelector('.additional-pickup-person').value;
+                const time = item.querySelector('.additional-pickup-time').value;
+                const location = item.querySelector('.additional-pickup-location').value;
+                if (person || time || location) {
+                    additionalPickups.push({ person_name: person, time, location });
+                }
+            });
+
+            // Collect other pickups
+            const otherPickups = [];
+            document.querySelectorAll('#otherPickupsContainer .dynamic-item').forEach(item => {
+                const location = item.querySelector('.other-pickup-location').value;
+                const time = item.querySelector('.other-pickup-time').value;
+                if (location || time) {
+                    otherPickups.push({ location, time });
+                }
+            });
+
+            // Collect toll tickets
+            const tollTickets = [];
+            let totalTollAmount = 0;
+            document.querySelectorAll('#tollTicketsContainer .dynamic-item').forEach(item => {
+                const ticketNumber = item.querySelector('.toll-ticket-number').value;
+                const amount = parseFloat(item.querySelector('.toll-ticket-amount').value) || 0;
+                if (ticketNumber || amount) {
+                    tollTickets.push({ ticket_number: ticketNumber, amount });
+                    totalTollAmount += amount;
+                }
+            });
+
+            return {
+                date,
+                departure_time: document.getElementById('departureTime').value,
+                return_time: document.getElementById('returnTime').value,
+                overtime_hours: parseFloat(document.getElementById('overtimeHours').value) || 0,
+                first_pickup: {
+                    person_name: document.getElementById('firstPickupPerson').value,
+                    time: document.getElementById('firstPickupTime').value,
+                    location: document.getElementById('firstPickupLocation').value
+                },
+                additional_pickups: additionalPickups,
+                first_work_location: {
+                    location: document.getElementById('firstWorkLocation').value,
+                    time: document.getElementById('firstWorkTime').value
+                },
+                other_daily_pickups: otherPickups,
+                last_factory_departure: {
+                    location: document.getElementById('lastFactoryLocation').value,
+                    time: document.getElementById('lastFactoryTime').value
+                },
+                last_employee_dropoff: {
+                    person_name: document.getElementById('lastDropoffPerson').value,
+                    time: document.getElementById('lastDropoffTime').value,
+                    location: document.getElementById('lastDropoffLocation').value
+                },
+                total_kilometers: parseFloat(document.getElementById('totalKilometers').value) || 0,
+                passenger_names: document.getElementById('passengerNames').value,
+                passenger_signature: document.getElementById('passengerSignature').value,
+                driver_signature: document.getElementById('driverSignature').value,
+                toll_tickets: tollTickets,
+                total_toll_amount: totalTollAmount,
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        function clearForm() {
+            if (editingIndex < 0) {
+                const confirmClear = confirm('Are you sure you want to clear the form?');
+                if (!confirmClear) return;
+            }
+
+            document.getElementById('reportForm').reset();
+            document.getElementById('additionalPickupsContainer').innerHTML = '';
+            document.getElementById('otherPickupsContainer').innerHTML = '';
+            document.getElementById('tollTicketsContainer').innerHTML = '';
+            document.getElementById('totalTollAmount').style.display = 'none';
+            setDefaultDate();
+            editingIndex = -1;
+            document.getElementById('submitBtn').textContent = '✅ Submit Report';
+            
+            // Remove error classes
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+        }
+
+        function duplicateLastEntry() {
+            if (window.driverReports.length === 0) {
+                showMessage('No previous reports to duplicate', 'error');
+                return;
+            }
+
+            const lastReport = window.driverReports[window.driverReports.length - 1];
+            populateFormWithData(lastReport);
+            setDefaultDate();
+            showMessage('Last report duplicated. Please update the date and submit.', 'success');
+        }
+
+        function populateFormWithData(report) {
+            document.getElementById('departureTime').value = report.departure_time;
+            document.getElementById('returnTime').value = report.return_time;
+            document.getElementById('overtimeHours').value = report.overtime_hours;
+            document.getElementById('firstPickupPerson').value = report.first_pickup.person_name;
+            document.getElementById('firstPickupTime').value = report.first_pickup.time;
+            document.getElementById('firstPickupLocation').value = report.first_pickup.location;
+            document.getElementById('firstWorkLocation').value = report.first_work_location.location;
+            document.getElementById('firstWorkTime').value = report.first_work_location.time;
+            document.getElementById('lastFactoryLocation').value = report.last_factory_departure.location;
+            document.getElementById('lastFactoryTime').value = report.last_factory_departure.time;
+            document.getElementById('lastDropoffPerson').value = report.last_employee_dropoff.person_name;
+            document.getElementById('lastDropoffTime').value = report.last_employee_dropoff.time;
+            document.getElementById('lastDropoffLocation').value = report.last_employee_dropoff.location;
+            document.getElementById('totalKilometers').value = report.total_kilometers;
+            document.getElementById('passengerNames').value = report.passenger_names;
+            document.getElementById('passengerSignature').value = report.passenger_signature;
+            document.getElementById('driverSignature').value = report.driver_signature;
+
+            // Clear and repopulate dynamic sections
+            document.getElementById('additionalPickupsContainer').innerHTML = '';
+            document.getElementById('otherPickupsContainer').innerHTML = '';
+            document.getElementById('tollTicketsContainer').innerHTML = '';
+
+            report.additional_pickups.forEach(pickup => {
+                addAdditionalPickup();
+                const items = document.querySelectorAll('#additionalPickupsContainer .dynamic-item');
+                const lastItem = items[items.length - 1];
+                lastItem.querySelector('.additional-pickup-person').value = pickup.person_name;
+                lastItem.querySelector('.additional-pickup-time').value = pickup.time;
+                lastItem.querySelector('.additional-pickup-location').value = pickup.location;
+            });
+
+            report.other_daily_pickups.forEach(pickup => {
+                addOtherPickup();
+                const items = document.querySelectorAll('#otherPickupsContainer .dynamic-item');
+                const lastItem = items[items.length - 1];
+                lastItem.querySelector('.other-pickup-location').value = pickup.location;
+                lastItem.querySelector('.other-pickup-time').value = pickup.time;
+            });
+
+            report.toll_tickets.forEach(ticket => {
+                addTollTicket();
+                const items = document.querySelectorAll('#tollTicketsContainer .dynamic-item');
+                const lastItem = items[items.length - 1];
+                lastItem.querySelector('.toll-ticket-number').value = ticket.ticket_number;
+                lastItem.querySelector('.toll-ticket-amount').value = ticket.amount;
+            });
+
+            updateTollTotal();
+        }
+
+        // History management
+        function renderHistory() {
+            const container = document.getElementById('historyTableContainer');
+            
+            if (window.driverReports.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3>No reports yet</h3>
+                        <p>Start by creating your first report in the New Report tab.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date (newest first)
+            const sortedReports = [...window.driverReports].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Departure</th>
+                            <th>Return</th>
+                            <th>Total KM</th>
+                            <th>Overtime (h)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            sortedReports.forEach((report, index) => {
+                const originalIndex = window.driverReports.indexOf(report);
+                html += `
+                    <tr>
+                        <td>${formatDate(report.date)}</td>
+                        <td>${report.departure_time}</td>
+                        <td>${report.return_time}</td>
+                        <td>${report.total_kilometers} km</td>
+                        <td>${report.overtime_hours}</td>
+                        <td>
+                            <button class="btn btn-primary btn-small" onclick="editReport(${originalIndex})">✏️ Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteReport(${originalIndex})">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function editReport(index) {
+            const report = window.driverReports[index];
+            editingIndex = index;
+            
+            document.getElementById('tripDate').value = report.date;
+            populateFormWithData(report);
+            
+            document.getElementById('submitBtn').textContent = '💾 Update Report';
+            switchTab('new-report');
+            document.querySelector('.tab').click();
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showMessage('Editing report. Make changes and click Update.', 'success');
+        }
+
+        function deleteReport(index) {
+            if (confirm('Are you sure you want to delete this report?')) {
+                window.driverReports.splice(index, 1);
+                renderHistory();
+                updateStats();
+                showMessage('Report deleted successfully', 'success');
+            }
+        }
+
+        function filterHistory() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#historyTableContainer tbody tr');
+            
+            rows.forEach(row => {
+                const date = row.cells[0].textContent.toLowerCase();
+                if (date.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function updateStats() {
+            const reports = window.driverReports;
+            
+            document.getElementById('totalReports').textContent = reports.length;
+            
+            const totalKm = reports.reduce((sum, r) => sum + (r.total_kilometers || 0), 0);
+            document.getElementById('totalKmStats').textContent = totalKm.toFixed(1);
+            
+            const totalOvertime = reports.reduce((sum, r) => sum + (r.overtime_hours || 0), 0);
+            document.getElementById('totalOvertimeStats').textContent = totalOvertime.toFixed(1);
+            
+            if (reports.length > 0) {
+                const dates = reports.map(r => new Date(r.date)).sort((a, b) => a - b);
+                const firstDate = formatDate(dates[0].toISOString().split('T')[0]);
+                const lastDate = formatDate(dates[dates.length - 1].toISOString().split('T')[0]);
+                document.getElementById('dateRangeStats').textContent = `${firstDate} - ${lastDate}`;
+            } else {
+                document.getElementById('dateRangeStats').textContent = '-';
+            }
+        }
+
+        // Export functionality
+        function populateExportDropdown() {
+            const select = document.getElementById('selectReport');
+            select.innerHTML = '<option value="">-- Select a report --</option>';
+            
+            window.driverReports.forEach((report, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${formatDate(report.date)} - ${report.departure_time} to ${report.return_time}`;
+                select.appendChild(option);
+            });
+        }
+
+        function exportAllReports() {
+            if (window.driverReports.length === 0) {
+                showMessage('No reports to export', 'error');
+                return;
+            }
+
+            const data = prepareExcelData(window.driverReports);
+            downloadExcel(data, 'All_Reports');
+            showMessage('Excel file downloaded successfully!', 'success');
+        }
+
+        function exportSelectedReport() {
+            const select = document.getElementById('selectReport');
+            const index = select.value;
+            
+            if (index === '') {
+                showMessage('Please select a report to export', 'error');
+                return;
+            }
+
+            const report = window.driverReports[index];
+            const data = prepareExcelData([report]);
+            downloadExcel(data, `Report_${report.date}`);
+            showMessage('Excel file downloaded successfully!', 'success');
+        }
+
+        function prepareExcelData(reports) {
+            const data = [];
+            
+            // Headers
+            data.push([
+                'Date (Ngày)',
+                'Departure Time (Giờ đi)',
+                'Return Time (Giờ về)',
+                'Overtime Hours (Giờ tăng ca)',
+                'First Pickup Person (Người đón đầu)',
+                'First Pickup Time (Giờ đón đầu)',
+                'First Pickup Location (Địa điểm đón đầu)',
+                'Additional Pickups (Điểm đón khác)',
+                'First Work Location (Nơi làm việc đầu)',
+                'First Work Time (Giờ đến làm việc)',
+                'Other Daily Pickups (Đón khác trong ngày)',
+                'Last Factory Location (Nhà máy cuối)',
+                'Last Factory Time (Giờ rời nhà máy)',
+                'Last Dropoff Person (Người cuối trả)',
+                'Last Dropoff Time (Giờ trả cuối)',
+                'Last Dropoff Location (Địa điểm trả cuối)',
+                'Total Kilometers (Tổng KM)',
+                'Passenger Names (Tên hành khách)',
+                'Passenger Signature (Ký tên hành khách)',
+                'Driver Signature (Ký tên tài xế)',
+                'Toll Tickets (Vé cầu đường)',
+                'Total Toll Amount (Tổng tiền cầu đường)'
+            ]);
+
+            // Data rows
+            reports.forEach(report => {
+                const additionalPickupsStr = report.additional_pickups
+                    .map(p => `${p.person_name} at ${p.time} (${p.location})`)
+                    .join('; ');
+                
+                const otherPickupsStr = report.other_daily_pickups
+                    .map(p => `${p.location} at ${p.time}`)
+                    .join('; ');
+                
+                const tollTicketsStr = report.toll_tickets
+                    .map(t => `${t.ticket_number}: ${t.amount} VND`)
+                    .join('; ');
+
+                data.push([
+                    formatDate(report.date),
+                    report.departure_time,
+                    report.return_time,
+                    report.overtime_hours,
+                    report.first_pickup.person_name,
+                    report.first_pickup.time,
+                    report.first_pickup.location,
+                    additionalPickupsStr,
+                    report.first_work_location.location,
+                    report.first_work_location.time,
+                    otherPickupsStr,
+                    report.last_factory_departure.location,
+                    report.last_factory_departure.time,
+                    report.last_employee_dropoff.person_name,
+                    report.last_employee_dropoff.time,
+                    report.last_employee_dropoff.location,
+                    report.total_kilometers,
+                    report.passenger_names,
+                    report.passenger_signature,
+                    report.driver_signature,
+                    tollTicketsStr,
+                    report.total_toll_amount
+                ]);
+            });
+
+            return data;
+        }
+
+        function downloadExcel(data, filename) {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 10 },
+                { wch: 20 }, { wch: 10 }, { wch: 30 }, { wch: 40 },
+                { wch: 30 }, { wch: 10 }, { wch: 40 }, { wch: 30 },
+                { wch: 10 }, { wch: 20 }, { wch: 10 }, { wch: 30 },
+                { wch: 10 }, { wch: 30 }, { wch: 20 }, { wch: 20 },
+                { wch: 40 }, { wch: 15 }
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Driver Reports');
+            
+            const dateStr = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `Driver_Reports_${filename}_${dateStr}.xlsx`);
+        }
+
+        // Utility functions
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            container.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
